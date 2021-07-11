@@ -1,110 +1,78 @@
-SORT
-=====
+# Social Distancing Early Forecasting System
 
-A simple online and realtime tracking algorithm for 2D multiple object tracking in video sequences.
-See an example [video here](https://motchallenge.net/movies/ETH-Linthescher-SORT.mp4).
+Out-of-the-box code base for social distancing early forecasting. Given a video, this code will give out a warning if the system predicts that people will violate social distancing (getting closer with each other than 6 feet) in the next 5 seconds. This early warnings could help stop people before they are actually at risk of getting infected. See this [blog](https://medium.com/@junweil/social-distancing-early-forecasting-system-60186baa67f5).
 
-By Alex Bewley  
+Keep social distancing (about 6 feet) and [save lives](https://www.cdc.gov/)!
 
-### Introduction
+Below we show an example of the system output. If potential risks are detected, trajectory predictions are shown and warnings are printed near the person.
 
-SORT is a barebones implementation of a visual multiple object tracking framework based on rudimentary data association and state estimation techniques. It is designed for online tracking applications where only past and current frames are available and the method produces object identities on the fly. While this minimalistic tracker doesn't handle occlusion or re-entering objects its purpose is to serve as a baseline and testbed for the development of future trackers.
-
-SORT was initially described in an [arXiv tech report](http://arxiv.org/abs/1602.00763). At the time of the initial publication, SORT was ranked the best *open source* multiple object tracker on the [MOT benchmark](https://motchallenge.net/results/2D_MOT_2015/).
-
-This code has been tested on Mac OSX 10.10, and Ubuntu 14.04, with Python 2.7 (anaconda).
-
-**Note:** A significant proportion of SORT's accuracy is attributed to the detections.
-For your convenience, this repo also contains *Faster* RCNN detections for the MOT benchmark sequences in the [benchmark format](https://motchallenge.net/instructions/). To run the detector yourself please see the original [*Faster* RCNN project](https://github.com/ShaoqingRen/faster_rcnn) or the python reimplementation of [py-faster-rcnn](https://github.com/rbgirshick/py-faster-rcnn) by Ross Girshick.
-
-**Also see:**
-A new and improved version of SORT with a Deep Association Metric implemented in tensorflow is available at [https://github.com/nwojke/deep_sort](https://github.com/nwojke/deep_sort) .
-
-### License
-
-SORT is released under the GPL License (refer to the LICENSE file for details) to promote the open use of the tracker and future improvements. If you require a permissive license contact Alex (alex@bewley.ai).
-
-### Citing SORT
-
-If you find this repo useful in your research, please consider citing:
-
-    @inproceedings{Bewley2016_sort,
-      author={Bewley, Alex and Ge, Zongyuan and Ott, Lionel and Ramos, Fabio and Upcroft, Ben},
-      booktitle={2016 IEEE International Conference on Image Processing (ICIP)},
-      title={Simple online and realtime tracking},
-      year={2016},
-      pages={3464-3468},
-      keywords={Benchmark testing;Complexity theory;Detectors;Kalman filters;Target tracking;Visualization;Computer Vision;Data Association;Detection;Multiple Object Tracking},
-      doi={10.1109/ICIP.2016.7533003}
-    }
+<div align="center">
+  <div style="">
+      <img src="images/VIRAT_S_000008.short.crop.gif" width="600px" />
+  </div>
+  <br/>
+</div>
 
 
-### Dependencies:
+## Dependencies
++ Python 2/3; TensorFlow-GPU==1.15.2; cv2; tqdm; scipy; sklearn; matplotlib; ffmpeg
 
-This code makes use of the following packages:
-1. [`scikit-learn`](http://scikit-learn.org/stable/)
-0. [`scikit-image`](http://scikit-image.org/download)
-0. [`FilterPy`](https://github.com/rlabbe/filterpy)
-
-To install required dependencies run:
+## Usage
+### Step 1: Download models and a test video
+Assuming you run the code at the top level of this repository. Model size is about 468MB and the test video is about 7MB.
 ```
-$ pip install -r requirements.txt
+bash scripts/download_models.sh
+bash scripts/download_test_video.sh
 ```
 
-
-### Demo:
-
-To run the tracker with the provided detections:
-
+### Step 2: Run inferencing
 ```
-$ cd path/to/sort
-$ python sort.py
+python code/inference/main.py test/test_videos.lst test/output --pred_vis_path test/visualization
 ```
 
-To display the results you need to:
+### Step 3: Make a video
+```
+cd test/visualization
+ffmpeg -framerate 30.0 -i test_video/test_video_F_%08d.jpg test_video.mp4
+```
 
-0. Download the [2D MOT 2015 benchmark dataset](https://motchallenge.net/data/2D_MOT_2015/#download)
-0. Create a symbolic link to the dataset
-  ```
-  $ ln -s /path/to/MOT2015_challenge/data/2DMOT2015 mot_benchmark
-  ```
-0. Run the demo with the ```--display``` flag
-  ```
-  $ python sort.py --display
-  ```
+## Speed
+My limited tests show that on a RTX 2060 (6GB memory) the processing time is 2x real-time, which means a one-minute 1920x1080 video will take 2 minute to process.
+On a GTX 1080 TI it is about 1x real-time.
+Reducing input resolution will significantly decrease the processing time.
+The visualization is slow since it writes tons of images to the disk.
 
+## Acknowledgments
+This project is based on [CMU's Object Detection and Tracking](https://github.com/JunweiLiang/Object_Detection_Tracking) and the following papers.
+If you find this code useful then please cite:
+```
+@inproceedings{liang2019peeking,
+  title={Peeking into the future: Predicting future person activities and locations in videos},
+  author={Liang, Junwei and Jiang, Lu and Niebles, Juan Carlos and Hauptmann, Alexander G and Fei-Fei, Li},
+  booktitle={Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition},
+  pages={5725--5734},
+  year={2019}
+}
+@inproceedings{liang2020garden,
+  title={The Garden of Forking Paths: Towards Multi-Future Trajectory Prediction},
+  author={Junwei Liang and Lu Jiang and Kevin Murphy and Ting Yu and Alexander Hauptmann},
+  booktitle={Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition},
+  year={2020}
+}
+```
 
-### Main Results
+## More Examples
+<div align="center">
+  <div style="">
+      <img src="images/VIRAT_S_040104_04_000854_000934.crop.gif" width="600px" />
+  </div>
+  <br/>
+  <div style="">
+      <img src="images/VIRAT_S_000201_05_001081_001215.crop.gif" width="600px" />
+  </div>
+  <br/>
+  <div style="">
+      <img src="images/VIRAT_S_040104_01_000227_000457.crop.gif" width="500px" />
+  </div>
+</div>
 
-Using the [MOT challenge devkit](https://motchallenge.net/devkit/) the method produces the following results (as described in the paper).
-
- Sequence       | Rcll | Prcn |  FAR | GT  MT  PT  ML|   FP    FN  IDs   FM|  MOTA  MOTP MOTAL
---------------- |:----:|:----:|:----:|:-------------:|:-------------------:|:------------------:
- TUD-Campus     | 68.5 | 94.3 | 0.21 |  8   6   2   0|   15   113    6    9|  62.7  73.7  64.1
- ETH-Sunnyday   | 77.5 | 81.9 | 0.90 | 30  11  16   3|  319   418   22   54|  59.1  74.4  60.3
- ETH-Pedcross2  | 51.9 | 90.8 | 0.39 | 133  17  60  56|  330  3014   77  103|  45.4  74.8  46.6
- ADL-Rundle-8   | 44.3 | 75.8 | 1.47 | 28   6  16   6|  959  3781  103  211|  28.6  71.1  30.1
- Venice-2       | 42.5 | 64.8 | 2.75 | 26   7   9  10| 1650  4109   57  106|  18.6  73.4  19.3
- KITTI-17       | 67.1 | 92.3 | 0.26 |  9   1   8   0|   38   225    9   16|  60.2  72.3  61.3
- *Overall*      | 49.5 | 77.5 | 1.24 | 234  48 111  75| 3311 11660  274  499|  34.0  73.3  35.1
-
-
-### Using SORT in your own project
-
-Below is the gist of how to instantiate and update SORT. See the ['__main__'](https://github.com/abewley/sort/blob/master/sort.py#L239) section of [sort.py](https://github.com/abewley/sort/blob/master/sort.py#L239) for a complete example.
-    
-    from sort import *
-    
-    #create instance of SORT
-    mot_tracker = Sort() 
-    
-    # get detections
-    ...
-    
-    # update SORT
-    track_bbs_ids = mot_tracker.update(detections)
-
-    # track_bbs_ids is a np array where each row contains a valid bounding box and track_id (last column)
-    ...
-    
- 
